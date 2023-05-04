@@ -1,33 +1,54 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional
+from fastapi import FastAPI, HTTPException 
 
-app = FastAPI()
+from pydantic import BaseModel 
 
-class Persona (BaseModel):
-    id: int
-    nombre: str
-    edad: int
-    ciudad: Optional[str] = None
+from typing import List, Optional 
 
-personaList = []
+app = FastAPI() 
 
-@app.post("/personas", response_model=Persona)
-def crear_persona(person: Persona):
-    personaList.append(person)
-    return person
+class Cliente (BaseModel): 
 
-@app.get("/personas", response_model=List[Persona])
-def get_personas():
-    return personaList
+orden: int 
 
-@app.get("/personas/{persona_id}", response_model=Persona)
-def obtener_persona (persona_id: int):
-    for persona in personaList:
-        if persona.id == persona_id:
-            return persona
-    raise HTTPException(status_code=404, detail="Persona no encontrada")
+nombre: str 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "Interoperabilidad 2"}
+edad: int 
+
+agencia: Optional[str] = None 
+
+cuenta: int 
+
+clienteList = [] 
+
+@app.post("/cliente", response_model=Cliente) 
+
+def crear_cliente(cliente: Cliente): 
+
+clienteList.append(client) 
+
+return client 
+
+@app.get("/cliente", cliente_model=List[Cliente]) 
+
+def get_clientes(): 
+
+return clienteList 
+
+@app.get("/clientes/{cliente_orden}", response_model=Cliente) 
+
+def obtener_cliente (cliente_orden: int): 
+
+for persona in clienteList: 
+
+if cliente.orden == cliente_orden: 
+
+return cliente 
+
+raise HTTPException(status_code=404, detail="Cliente no valido") 
+
+@app.get("/") 
+
+def read_root(): 
+
+return {"Hello": "Interoperabilidad"} 
+
