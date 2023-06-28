@@ -78,4 +78,4 @@ async def get_artista(artista_id: str):
 
 @app.get("/")
 def read_root():
-    return {"Hello": "Interoperabilidad 8"}
+    return {"Hello": "Tarea Concluida"}
