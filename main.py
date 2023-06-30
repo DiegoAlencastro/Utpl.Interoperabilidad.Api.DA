@@ -48,7 +48,6 @@ app = FastAPI(
 #para agregar seguridad a nuestro api
 security = HTTPBasic()
 
-from fastapi_versioning import VersionedFastAPI, version
 
 #configuracion de mongo
 cliente = pymongo.MongoClient("mongodb+srv://utplda:s4nN15Zcbf5W0D5v@cluster0.po6e08w.mongodb.net/?retryWrites=true&w=majority")
@@ -128,7 +127,7 @@ def eliminar_cliente (cliente_id: str):
 @app.get("/")
 @version(1,0)
 def read_root():
-    return {"Hello": "Tarea Concluida APP Cliente"}
+    return {"Hello": "Tarea Concluida APP Cliente DA"}
 
 
 app = VersionedFastAPI(app)
