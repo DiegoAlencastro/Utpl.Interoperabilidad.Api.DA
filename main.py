@@ -1,15 +1,17 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 import uuid
-#seccion mongo_importar libreria
-import pymongo
+
 from fastapi_versioning import VersionedFastAPI, version
 
-#configuracion de mongo
-cliente = pymongo.MongoClient("mongodb+srv://utplda:s4nN15Zcbf5W0D5v@cluster0.po6e08w.mongodb.net/?retryWrites=true&w=majority")
-database = cliente["clientes"]
-coleccion = database["datos"]
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+from auth import authenticate
+
+#seccion mongo_importar libreria
+import pymongo
+
 
 description = """
 Interoperabilidad Actualizacion Datos Cliente. 🚀
@@ -42,6 +44,16 @@ app = FastAPI(
     },
     openapi_tags = tags_metadata  
 )
+
+#para agregar seguridad a nuestro api
+security = HTTPBasic()
+
+from fastapi_versioning import VersionedFastAPI, version
+
+#configuracion de mongo
+cliente = pymongo.MongoClient("mongodb+srv://utplda:s4nN15Zcbf5W0D5v@cluster0.po6e08w.mongodb.net/?retryWrites=true&w=majority")
+database = cliente["clientes"]
+coleccion = database["datos"]
 
 class Cliente (BaseModel):
     orden: int
