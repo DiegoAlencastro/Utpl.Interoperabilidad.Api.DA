@@ -128,7 +128,7 @@ def eliminar_cliente (cliente_id: str):
 @app.get("/")
 @version(1,0)
 def read_root():
-    return {"Hello": "Tarea Concluida APP Cliente DA"}
+    return {"Hello": "Tarea Concluida APP Cliente"}
 
 
 app = VersionedFastAPI(app)
