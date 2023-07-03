@@ -87,11 +87,13 @@ async def crear_Clientev2(clienteE: ClienteEntradaV2):
     resultadoDB =  coleccion.insert_one(itemcliente.dict())
     return itemcliente
 
+## Buscar Cliente
 @app.get("/client", response_model=List[ClienteRepositorio], tags = ["clientes"])
 @version(1,0)
 def get_cliente():
     return clienteList
 
+## Identificar Cliente por codigo.
 @app.get("/client/{cedula_id}", response_model=ClienteRepositorio, tags = ["clientes"])
 @version(1,0)
 def obtener_Cliente (cedula_id: int):
@@ -116,6 +118,7 @@ def obtener_Cliente (Cliente_id: str):
     else:
         raise HTTPException(status_code=404, detail="Cliente no encontrada")
 
+  ##codigo Sin Existencia
 @app.delete("/Cliente/{Cliente_id}", tags=["Cliente"])
 @version(1, 0)
 def eliminar_Cliente (Cliente_id: str):
