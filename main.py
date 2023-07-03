@@ -2,15 +2,17 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 import uuid
+import pymongo
 
 from fastapi_versioning import VersionedFastAPI, version
-
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-
 from auth import authenticate
 
 #seccion mongo_importar libreria
-import pymongo
+cliente = pymongo.MongoClient("mongodb+srv://utplda:s4nN15Zcbf5W0D5v@cluster0.po6e08w.mongodb.net/?retryWrites=true&w=majority")
+database = cliente["clientes"]
+coleccion = database["datos"]
+
 
 description = """
 Interoperabilidad Actualizacion Datos Cliente. 🚀
@@ -23,10 +25,11 @@ Detalle de clientes.
 """
 tags_metadata = [
     {
-        "name":"clientes",
+        "name":"cliente",
         "description":"Actualizacion Datos Cliente"
     }
 ]
+
 app = FastAPI(
     title="Interoperabilidad Actualizacion Datos Cliente",
     description= description,
@@ -34,97 +37,110 @@ app = FastAPI(
     terms_of_service="http://example.com/terms/",
     contact={
         "name": "Diego Alencastro",
-        "url": "https://github.com/DiegoAlencastro/Utpl.Interoperabilidad.Api.DA.git",
+        "url": "https://github.com/familiaerba/Utpl.Interoperabilidad.Api.git",
         "email": "dialencastro@utpl.edu.ec",
     },
     license_info={
         "name": "Apache 2.0",
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
-    },
-    openapi_tags = tags_metadata  
+    }, 
+    openapi_tags = tags_metadata   
 )
 
 #para agregar seguridad a nuestro api
 security = HTTPBasic()
 
-#configuracion de mongo
-cliente = pymongo.MongoClient("mongodb+srv://utplda:s4nN15Zcbf5W0D5v@cluster0.po6e08w.mongodb.net/?retryWrites=true&w=majority")
-database = cliente["clientes"]
-coleccion = database["datos"]
-
-class Cliente (BaseModel):
-    orden: int
-    nombre: str
-    edad: int
-    agencia: Optional[str] = None
-    cuenta: int
-
 class ClienteRepositorio (BaseModel):
     id: str
     nombre: str
-    apellido: str
-    edad: int
-    oficina: Optional[str] = None
+    cantPro: int
+    cedula: Optional[str] = None
+    ciudad: Optional[str] = None
 
 class ClienteEntrada (BaseModel):
-    id: str
-    nombre: str
-    apellido: str
-    edad: int
-    oficina: Optional[str] = None
+    nombre:str
+    cantPro:int
+    ciudad: Optional[str] = None
 
-personasList = []
+class ClienteEntradaV2 (BaseModel):
+    nombre:str
+    cantPro:int
+    cedula:str
+    ciudad: Optional[str] = None
 
-@app.post("/clientes", response_model=ClienteRepositorio, tags = ["clientes"])
+
+
+
+clienteList = []
+
+@app.post("/cliente", response_model=ClienteRepositorio, tags = ["cliente"])
+@version(1, 0)
+async def crear_cliente(clienteE: ClienteEntrada):
+    itemcliente = ClienteRepositorio (id= str(uuid.uuid4()), nombre = clienteE.nombre, cantPro = clienteE.cantPro, ciudad = clienteE.ciudad)
+    resultadoDB =  coleccion.insert_one(itemcliente.dict())
+    return itemcliente
+
+@app.post("/cliente", response_model=ClienteRepositorio, tags = ["cliente"])
+@version(2, 0)
+async def crear_Clientev2(clienteE: ClienteEntradaV2):
+    itemcliente = ClienteRepositorio (id= str(uuid.uuid4()), nombre = personE.nombre, cantPro = personE.cantPro, ciudad = personE.ciudad, cedula = personE.cedula)
+    resultadoDB =  coleccion.insert_one(itemcliente.dict())
+    return itemcliente
+
+@app.get("/client", response_model=List[ClienteRepositorio], tags = ["clientes"])
 @version(1,0)
-async def crear_cliente(clientE: ClienteEntradaEntrada):
-    print ('llego')
-    clientE.apellido, edad = clientE.edad, oficina = clientE.oficina)
-    resultadoDB =  coleccion.insert_one(itemCliente.dict())
-    return itemCliente
+def get_cliente():
+    return clienteList
 
-@app.get("/clientes", response_model=List[ClienteRepositorio], tags=["clientes"])
+@app.get("/client/{cedula_id}", response_model=ClienteRepositorio, tags = ["clientes"])
 @version(1,0)
-def get_clientes():
-    itemsCliente = list(coleccion.find())
+def obtener_Cliente (cedula_id: int):
+    for comprador in clienteList:
+        if cedula == cedula:
+            return comprador
+    raise HTTPException(status_code=404, detail="Cliente no encontrado")
+@app.get("/Cliente", response_model=List[ClienteRepositorio], tags=["Cliente"])
+@version(1, 0)
+def get_Cliente(credentials: HTTPBasicCredentials = Depends(security)):
+    authenticate(credentials)
+    items = list(coleccion.find())
     print (items)
-    return itemsCliente
+    return items
 
-## Buscar Cliente
-@app.get("/clientes/{cliente_id}", response_model=ClienteRepositorio, tags=["clientes"])
-@version(1,0)
-def obtener_cliente (cliente_id: str):
-    item = coleccion.find_one({"id": persona_id})
+@app.get("/Cliente/{Cliente_id}", response_model=ClienteRepositorio , tags=["Ciente"])
+@version(1, 0)
+def obtener_Cliente (Cliente_id: str):
+    item = coleccion.find_one({"id": Cliente_id})
     if item:
         return item
     else:
-        raise HTTPException(status_code=404, detail="Cliente no Existe")
+        raise HTTPException(status_code=404, detail="Cliente no encontrada")
 
-## Identificar Cliente por codigo.    
-@app.get("/Cliente/codigo/{cod_num}", response_model=Huesped, tags = ["clientes"])
-@version(2,0)
-def obtener_cod(cod_num: int):
-    item = coleccion.find_one({"cod": cod_num})
-    if item:
-        return item
-    else:
-        raise HTTPException(status_code=404, detail="Cliente no Existe")
-
-    ##codigo Sin Existencia
-    
-@app.delete("/clientes/{cliente_id}", tags=["clientes"])
-@version(1,0)
-def eliminar_cliente (cliente_id: str):
-    result = coleccion.delete_one({"id": cliente_id})
+@app.delete("/Cliente/{Cliente_id}", tags=["Cliente"])
+@version(1, 0)
+def eliminar_Cliente (Cliente_id: str):
+    result = coleccion.delete_one({"id": Cliente_id})
     if result.deleted_count == 1:
-        return {"mensaje": "Eliminado exitosamente"}
+        return {"mensaje": "Cliente eliminada exitosamente"}
     else:
-        raise HTTPException(status_code=404, detail="Cliente no Existe")
+        raise HTTPException(status_code=404, detail="Cliente no encontrada")
+
+@app.get("/Cliente/{Cliente_id}", tags = ["Cliente"])
+@version(1, 0)
+async def obtener_pista(Cliente_id: str):
+    track = sp.track(Cliente_id)
+    return track
+    
+@app.get("/Cliente/{Cliente_id}", tags = ["Cliente"])
+@version(1, 0)
+async def get_Cliente(Cliente_id: str):
+    Cliente = sp.Client(Cliente_id)
+    return Cliente
+
+   
 
 @app.get("/")
-@version(1,0)
 def read_root():
     return {"Hello": "Tarea Concluida APP Cliente DA"}
 
 app = VersionedFastAPI(app)
-
